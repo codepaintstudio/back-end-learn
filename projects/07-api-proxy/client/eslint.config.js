@@ -5,25 +5,34 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{js,jsx}'],
-    extends: [
-      js.configs.recommended,
-      reactHooks.configs['recommended-latest'],
-      reactRefresh.configs.vite,
-    ],
-    languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        ecmaFeatures: { jsx: true },
-        sourceType: 'module',
-      },
-    },
-    rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
-    },
-  },
+    globalIgnores(['dist']),
+    {
+        files: ['**/*.{js,jsx}'],
+        extends: [
+            js.configs.recommended,
+            reactHooks.configs['recommended-latest'],
+            reactRefresh.configs.vite
+        ],
+        languageOptions: {
+            ecmaVersion: 2020,
+            globals: globals.browser,
+            parserOptions: {
+                ecmaVersion: 'latest',
+                ecmaFeatures: { jsx: true },
+                sourceType: 'module'
+            }
+        },
+        rules: {
+            'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+            // 添加缩进规则
+            indent: [
+                'error',
+                4,
+                {
+                    SwitchCase: 1, // switch case 缩进级别
+                    ignoredNodes: ['TemplateLiteral'] // 可选：忽略模板字符串的缩进
+                }
+            ]
+        }
+    }
 ])
