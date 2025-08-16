@@ -1,0 +1,11 @@
+{
+  "name": "todo-backend",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node server.js",
+    "build": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "todo-frontend",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "vue": "^3.2.45",
+    "axios": "^1.4.0"
+  },
+  "devDependencies": {
+    "vite": "^4.3.9",
+    "@vitejs/plugin-vue": "^4.1.0"
+  }
+}

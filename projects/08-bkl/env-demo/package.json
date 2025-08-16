@@ -1,0 +1,24 @@
+{
+  "name": "env-demo",
+  "version": "1.0.0",
+  "description": "环境变量使用演示",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.0"
+  },
+  "keywords": [
+    "env",
+    "dotenv",
+    "environment",
+    "variables"
+  ],
+  "author": "Developer",
+  "license": "MIT"
+}

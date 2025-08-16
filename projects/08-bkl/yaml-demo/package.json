@@ -1,0 +1,23 @@
+{
+  "name": "yaml-demo",
+  "version": "1.0.0",
+  "description": "YAML 配置文件使用演示",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "yaml": "^2.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.0"
+  },
+  "keywords": [
+    "yaml",
+    "configuration",
+    "config"
+  ],
+  "author": "Developer",
+  "license": "MIT"
+}

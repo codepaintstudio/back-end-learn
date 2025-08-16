@@ -1,0 +1,24 @@
+{
+  "name": "orm-demo",
+  "version": "1.0.0",
+  "description": "ORM 技术演示",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "sqlite3": "^5.0.0",
+    "typeorm": "^0.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.0"
+  },
+  "keywords": [
+    "orm",
+    "typeorm",
+    "database"
+  ],
+  "author": "Developer",
+  "license": "MIT"
+}
