@@ -1,12 +1,24 @@
+// 初始化配置和依赖导入
+
+const path = require('path')
+require('dotenv').config({ path: path.resolve(__dirname, '.env'), debug: true })
+
+console.log('当前环境变量:')
+console.log('DB_HOST:', process.env.DB_HOST)
+console.log('DB_USER:', process.env.DB_USERNAME)
+console.log('DB_NAME:', process.env.DB_NAME)
+
 const express = require('express')
 const http = require('http')
 const { exec } = require('child_process')
+const axios = require('axios')
+const mysql = require('mysql2/promise')
+const cors = require('cors')
+
+// 创建Express应用和HTTP服务器
 const app = express()
 const server = http.createServer(app)
-const axios = require('axios')
-// Middleware
-// 添加CORS配置
-const cors = require('cors')
+// 中间件配置
 app.use(
     cors({
         origin: 'http://localhost:5173',
@@ -15,16 +27,75 @@ app.use(
         credentials: true
     })
 )
-app.options('*', cors())
-app.use(express.json()) // 启用JSON解析中间件
-app.use(express.static(__dirname + '/../client/dist'))
+app.options('*', cors()) // 预检请求处理
 
-// REST API routes
-app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', message: 'Server is running' })
+// 请求体解析中间件
+app.use(express.json()) // 解析JSON请求体
+app.use(express.static(__dirname + '/../client/dist')) // 静态文件服务
+
+// 数据库配置
+const pool = mysql.createPool({
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    user: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    waitForConnections: true,
+    connectionLimit: 10
+})
+// 连接数据库没
+// pool.on('connection', (connection) => {
+//     console.log('新数据库连接建立')
+// })
+
+// pool.on('error', (err) => {
+//     console.error('数据库连接池错误:', err)
+// })
+// WebSocket配置
+
+const io = require('socket.io')(server, {
+    cors: {
+        origin: 'http://localhost:5173',
+        methods: ['GET', 'POST'],
+        credentials: true
+    },
+    path: '/socket.io',
+    transports: ['websocket', 'polling']
 })
 
-// 聊天接口
+// 辅助函数
+
+/**
+ * 调用Ollama AI服务生成回复
+ * @param {string} prompt - 用户输入
+ * @returns {Promise<string>} AI生成的回复
+ */
+async function runOllama(prompt) {
+    try {
+        const response = await axios.post('http://localhost:11434/api/generate', {
+            model: 'gemma3:4b',
+            prompt: prompt,
+            system: '请用中文回答用户的问题。',
+            stream: false
+        })
+        console.log('Ollama API Response:', response.data)
+        return response.data.response.trim()
+    } catch (error) {
+        console.error('Ollama API Error:', error)
+        throw new Error('AI服务暂时不可用')
+    }
+}
+
+// REST API路由
+
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'ok',
+        message: 'Server is running'
+    })
+})
+
+// 聊天API（HTTP版）
 app.post('/api/chat', async (req, res) => {
     try {
         if (!req.body?.message) {
@@ -33,7 +104,7 @@ app.post('/api/chat', async (req, res) => {
                 message: 'Message is required'
             })
         }
-        //ollama API调用
+
         const response = await axios.post('http://localhost:11434/api/generate', {
             model: 'gemma3:4b',
             prompt: req.body.message,
@@ -53,48 +124,132 @@ app.post('/api/chat', async (req, res) => {
     }
 })
 
-// 404处理
-app.use((req, res) => {
-    res.status(404).json({
-        code: 404,
-        message: '接口不存在',
-        data: null
-    })
+// 数据库操作API
+
+app.post('/api/save', async (req, res) => {
+    try {
+        console.log('收到请求体:', req.body)
+
+        if (!req.body) {
+            return res.status(400).json({
+                error: 'Bad Request',
+                message: '请求体不能为空'
+            })
+        }
+
+        if (!req.body.username) {
+            return res.status(400).json({
+                error: 'Bad Request',
+                message: 'username字段必填'
+            })
+        }
+
+        if (!req.body.password) {
+            return res.status(400).json({
+                error: 'Bad Request',
+                message: 'password字段必填'
+            })
+        }
+
+        const [existing] = await pool.query('SELECT id FROM users WHERE username = ?', [
+            req.body.username
+        ])
+
+        if (existing.length > 0) {
+            return res.status(409).json({
+                error: 'Conflict',
+                message: '用户名已存在'
+            })
+        }
+
+        const [result] = await pool.query('INSERT INTO users SET ?', {
+            username: req.body.username,
+            password: req.body.password
+        })
+
+        res.json({
+            success: true,
+            id: result.insertId
+        })
+    } catch (error) {
+        console.error('数据库错误:', error)
+        res.status(500).json({
+            error: 'Database Error',
+            message: error.message,
+            sqlState: error.sqlState
+        })
+    }
 })
 
-// 错误处理中间件
-app.use((err, req, res, next) => {
-    console.error('Error:', err.stack)
-    res.status(500).json({
-        error: 'Internal Server Error',
-        message: err.message || 'Something went wrong!'
-    })
+app.get('/api/data', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT id, username FROM users') // 不返回密码
+        res.json({
+            data: rows,
+            count: rows.length
+        })
+    } catch (error) {
+        console.error('数据库查询错误:', error)
+        res.status(500).json({
+            error: 'Internal Server Error',
+            message: error.message
+        })
+    }
+})
+// 添加登录验证API
+app.post('/api/login', async (req, res) => {
+    try {
+        const { username, password } = req.body
+
+        if (!username || !password) {
+            return res.status(400).json({
+                success: false,
+                message: '用户名和密码不能为空'
+            })
+        }
+
+        // 查询数据库
+        const [rows] = await pool.query('SELECT * FROM users WHERE username = ? AND password = ?', [
+            username,
+            password
+        ])
+
+        if (rows.length > 0) {
+            res.json({
+                success: true,
+                user: {
+                    id: rows[0].id,
+                    username: rows[0].username
+                }
+            })
+        } else {
+            res.status(401).json({
+                success: false,
+                message: '用户名或密码错误'
+            })
+        }
+    } catch (error) {
+        console.error('登录验证错误:', error)
+        res.status(500).json({
+            success: false,
+            message: '服务器错误'
+        })
+    }
 })
 
-// 使用3000端口避免与前端开发服务器冲突
+// WebSocket事件处理
 
-// 修改端口配置
-const PORT = process.env.PORT || 3000
-
-// 添加Socket.io配置（如需）
-const io = require('socket.io')(server, {
-    cors: {
-        origin: 'http://localhost:5173',
-        methods: ['GET', 'POST'],
-        credentials: true
-    },
-    path: '/socket.io', // 明确指定路径
-    transports: ['websocket', 'polling'] // 指定传输方式
-})
-// 在server.listen之前添加
 io.on('connection', (socket) => {
     console.log('New client connected')
 
+    // 处理聊天消息
     socket.on('chat message', async (msg) => {
         try {
             console.log('收到用户消息:', msg)
             const aiResponse = await runOllama(msg)
             console.log('AI回复:', aiResponse)
+
+            // 返回AI回复给客户端
             socket.emit('chat message', {
                 user: msg,
                 ai: aiResponse
@@ -108,31 +263,38 @@ io.on('connection', (socket) => {
         }
     })
 
+    // 处理断开连接
     socket.on('disconnect', () => {
         console.log('Client disconnected')
     })
 })
+
+// 错误处理中间件
+
+// 404处理
+app.use((req, res) => {
+    res.status(404).json({
+        code: 404,
+        message: '接口不存在',
+        data: null
+    })
+})
+
+// 全局错误处理
+app.use((err, req, res, next) => {
+    console.error('Error:', err.stack)
+    res.status(500).json({
+        error: 'Internal Server Error',
+        message: err.message || 'Something went wrong!'
+    })
+})
+
+// 启动服务器
+
+const PORT = process.env.PORT || 3000
+console.log('DB_HOST:', process.env.DB_HOST)
+
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
     console.log(`Health check: http://localhost:${PORT}/api/health`)
 })
-
-/**
- * 安全地执行Ollama命令
- * @param {string} prompt - 用户输入的提示词
- * @returns {Promise<string>} - Ollama的输出结果
- */
-async function runOllama(prompt) {
-    try {
-        const response = await axios.post('http://localhost:11434/api/generate', {
-            model: 'gemma3:4b',
-            prompt: prompt,
-            system: '你是一个乐于助人的AI助手。请用中文回答用户的问题。',
-            stream: false
-        })
-        return response.data.response.trim()
-    } catch (error) {
-        console.error('Ollama API Error:', error)
-        throw new Error('AI服务暂时不可用')
-    }
-}

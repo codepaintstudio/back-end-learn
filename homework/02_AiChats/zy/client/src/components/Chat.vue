@@ -10,7 +10,7 @@
             </div>
         </div>
         <div class="input-area">
-            <input
+            <textInput
                 v-model="newMessage"
                 @keyup.enter="sendMessage"
                 placeholder="Type your message..."
@@ -22,9 +22,12 @@
 
 <script>
 import { io } from 'socket.io-client'
-
+import textInput from './text.vue'
 export default {
     name: 'Chat',
+    components: {
+        textInput
+    },
     data() {
         return {
             socket: null,
@@ -82,9 +85,27 @@ export default {
                     sender: 'ai'
                 })
             }
-
+            // this.testDatabase()
             this.newMessage = ''
         }
+        // testDatabaseAPI() {
+        //     // 存储数据
+        //     fetch('http://localhost:3000/api/save', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json'
+        //         },
+        //         body: JSON.stringify({
+        //             username: 'test',
+        //             password: '123456'
+        //         })
+        //     })
+
+        //     // 获取数据
+        //     fetch('/api/data')
+        //         .then((res) => res.json())
+        //         .then((data) => console.log(data))
+        // }
     }
 }
 </script>
@@ -92,10 +113,11 @@ export default {
 <style scoped>
 .chat-container {
     max-width: 600px;
+    height: 70%;
     margin: 0 auto;
-    padding: 20px;
+    /* padding: 20px;
     border: 1px solid #ccc;
-    border-radius: 8px;
+    border-radius: 8px; */
 }
 
 .messages {
@@ -129,6 +151,7 @@ export default {
 .input-area {
     display: flex;
     gap: 10px;
+    height: 400px;
 }
 
 input {
