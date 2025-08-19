@@ -1,7 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 const path = require('path')
-const { CORS_ORIGIN } = require('./config/env')
+const { CORS_ORIGIN } = require('./config/config.js')
 const apiRoutes = require('./routers/apiRoutes.js')
 const { notFoundHandler, errorHandler } = require('./middle/error.js')
 

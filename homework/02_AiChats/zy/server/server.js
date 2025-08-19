@@ -1,7 +1,7 @@
 const http = require('http')
 const app = require('./app')
-const { PORT, DB_HOST } = require('./config/env')
-const { AppDataSource } = require('./config/env') // 导入数据源
+const { PORT, DB_HOST } = require('./config/config.js')
+const { AppDataSource } = require('./config/config.js') // 导入数据源
 
 const server = http.createServer(app)
 

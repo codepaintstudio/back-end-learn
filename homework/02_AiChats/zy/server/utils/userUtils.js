@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
-const { JWT_SECRET, JWT_EXPIRES_IN } = require('../config/env')
+const { JWT_SECRET, JWT_EXPIRES_IN } = require('../config/config')
 
 // 密码加密 加盐10轮
 exports.hashPassword = async (password) => {
