@@ -1,6 +1,5 @@
 <template>
     <el-container style="height: 100vh">
-        <!-- 可收缩的侧边栏 -->
         <el-aside
             :width="isCollapse ? '64px' : '200px'"
             style="background: #545c64; transition: width 0.3s"
@@ -33,12 +32,10 @@
         </el-aside>
 
         <el-container>
-            <!-- 顶部栏（在侧边栏层级下方） -->
             <el-header style="background: #409eff; display: flex; align-items: center; z-index: 1">
                 <span style="color: white">ollama聊天</span>
             </el-header>
 
-            <!-- 主内容区 -->
             <el-main style="padding: 20px; overflow: auto">
                 <div v-if="!isLoggedIn" class="login-container">
                     <input
@@ -82,7 +79,7 @@ export default {
     setup() {
         const isCollapse = ref(false)
         const isLoggedIn = ref(false)
-        const isregister = ref(false)
+        // const isregister = ref(false)
         const errorMessage = ref('')
         const loginForm = ref({
             username: '',
@@ -107,12 +104,14 @@ export default {
                 } else {
                     errorMessage.value = response.data.message || '登录失败'
                 }
+                localStorage.setItem('token', response.data.token)
             } catch (error) {
                 console.error('登录错误:', error)
                 errorMessage.value = '登录失败，请检查网络连接'
             }
         }
         const handleLogout = () => {
+            localStorage.clear()
             isLoggedIn.value = false
         }
         const handleRegister = async () => {
@@ -121,7 +120,7 @@ export default {
                 return
             }
             try {
-                const response = await axios.post('http://localhost:3000/api/save', {
+                const response = await axios.post('http://localhost:3000/api/register', {
                     username: loginForm.value.username,
                     password: loginForm.value.password
                 })
@@ -133,6 +132,7 @@ export default {
                 } else {
                     errorMessage.value = response.data.message || '登录失败'
                 }
+                localStorage.setItem('token', response.data.token)
             } catch (error) {
                 console.error('登录错误:', error)
                 errorMessage.value = '登录失败，请检查网络连接'

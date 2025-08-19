@@ -19,7 +19,7 @@
 <script>
 import '@wangeditor/editor/dist/css/style.css' // 引入 css
 
-import { onBeforeUnmount, ref, shallowRef } from 'vue'
+import { onBeforeUnmount, shallowRef } from 'vue'
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
 
 export default {
@@ -44,9 +44,8 @@ export default {
         // 添加内容变化处理
         const handleChange = (editor) => {
             const html = editor.getHtml()
-            emit('update:modelValue', html) // 触发v-model更新
+            emit('update:modelValue', html)
         }
-
         onBeforeUnmount(() => {
             const editor = editorRef.value
             if (editor == null) return

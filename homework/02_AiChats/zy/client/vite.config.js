@@ -16,5 +16,8 @@ export default defineConfig({
             resolvers: [ElementPlusResolver()],
             dts: './components.d.ts'
         })
-    ]
+    ],
+    optimizeDeps: {
+        include: ['marked']
+    }
 })

@@ -6,7 +6,14 @@
                 :key="index"
                 :class="['message', message.sender]"
             >
-                {{ message.text }}
+                <div v-html="renderMarkdown(message.text)"></div>
+                <button
+                    v-if="message.showCopyButton"
+                    @click="copyAi(message.text)"
+                    class="hoverCopy"
+                >
+                    复制
+                </button>
             </div>
         </div>
         <div class="input-area">
@@ -21,8 +28,8 @@
 </template>
 
 <script>
-import { io } from 'socket.io-client'
 import textInput from './text.vue'
+import { marked } from 'marked'
 export default {
     name: 'Chat',
     components: {
@@ -35,37 +42,25 @@ export default {
             newMessage: ''
         }
     },
-    created() {
-        this.socket = io('http://localhost:5173')
 
-        this.socket.on('chat message', (data) => {
-            this.messages.push({
-                text: data.user,
-                sender: 'user'
-            })
-            this.messages.push({
-                text: data.ai,
-                sender: 'ai'
-            })
-            this.waitingForAI = false
-        })
-    },
     methods: {
         async sendMessage() {
             if (this.newMessage.trim() === '') return
-
+            console.log(localStorage)
             this.messages.push({
                 text: this.newMessage,
                 sender: 'user'
             })
-
+            console.log(localStorage.getItem('token'))
             try {
                 const response = await fetch('http://localhost:3000/api/chat', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        Accept: 'application/json'
+                        Accept: 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem('token')}` // 从本地存储获取Token
                     },
+
                     body: JSON.stringify({ message: this.newMessage })
                 })
 
@@ -76,8 +71,10 @@ export default {
                 const data = await response.json()
                 this.messages.push({
                     text: data.response,
-                    sender: 'ai'
+                    sender: 'ai',
+                    showCopyButton: true
                 })
+                console.log('当前输入是', this.newMessage)
             } catch (error) {
                 console.error('Error:', error)
                 this.messages.push({
@@ -87,30 +84,37 @@ export default {
             }
             // this.testDatabase()
             this.newMessage = ''
+        },
+        renderMarkdown(text) {
+            return marked.parse(text)
+        },
+        async copyAi(text) {
+            try {
+                await navigator.clipboard.writeText(text)
+                console.log('已复制文本内容')
+            } catch (error) {
+                console.log(error)
+            }
         }
-        // testDatabaseAPI() {
-        //     // 存储数据
-        //     fetch('http://localhost:3000/api/save', {
-        //         method: 'POST',
-        //         headers: {
-        //             'Content-Type': 'application/json'
-        //         },
-        //         body: JSON.stringify({
-        //             username: 'test',
-        //             password: '123456'
-        //         })
-        //     })
-
-        //     // 获取数据
-        //     fetch('/api/data')
-        //         .then((res) => res.json())
-        //         .then((data) => console.log(data))
-        // }
     }
 }
 </script>
 
 <style scoped>
+/* 添加Markdown渲染样式 */
+.markdown-content {
+    pre {
+        background: #f5f5f5;
+        padding: 1em;
+        border-radius: 4px;
+    }
+    code {
+        background: #f5f5f5;
+        padding: 0.2em 0.4em;
+        border-radius: 3px;
+    }
+}
+
 .chat-container {
     max-width: 600px;
     height: 70%;
@@ -168,5 +172,8 @@ button {
     border: none;
     border-radius: 4px;
     cursor: pointer;
+}
+.hoverCopy:hover {
+    background-color: rgb(47, 222, 157);
 }
 </style>
