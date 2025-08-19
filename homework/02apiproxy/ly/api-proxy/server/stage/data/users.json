@@ -1,0 +1,32 @@
+[
+  {
+    "username": "xxx",
+    "password": "$2b$08$SK3wcSNiiul.4xegj3duvOwN.rju0ClgzOWcwR0ZORECE5tvrsKgq",
+    "id": "53789f49-e6da-43b9-8431-b615f8b794e1",
+    "createdAt": "2025-08-05T08:40:01.363Z"
+  },
+  {
+    "username": "ts",
+    "password": "$2b$08$I.coHCTSMlYVFPJRQVXVy.57pQ6oKFyictCIvLMI76cfGUNp86n5.",
+    "id": "04346fdc-43ac-4d3f-a11f-7199175880ad",
+    "createdAt": "2025-08-05T08:51:13.989Z"
+  },
+  {
+    "username": "as",
+    "password": "$2b$08$XKj2qRcXJIekLi0RJt1TKe0KH7.NhYAtq4y9IEBJgtuTffqY3AWUS",
+    "id": "c83d0057-8369-42c4-89a2-e4865205fcf4",
+    "createdAt": "2025-08-06T03:01:46.775Z"
+  },
+  {
+    "username": "ll",
+    "password": "$2b$08$H4pgDMUI5CgQ.2gfdnVRMuuJ0KEHYyeyQ2Q88NAuZ6gMj5reqUc86",
+    "id": "fa6792c8-4d9e-4e4d-b9d8-79c5e491b75a",
+    "createdAt": "2025-08-06T03:19:07.726Z"
+  },
+  {
+    "username": "ly",
+    "password": "$2b$08$64.AVCPjFe64TNzzAqr.2eUqeLZJ3P0yeod0mZl2cr9irH3vatgei",
+    "id": "f73ee39c-f909-4215-941b-2b1534e43e79",
+    "createdAt": "2025-08-07T02:42:12.671Z"
+  }
+]
