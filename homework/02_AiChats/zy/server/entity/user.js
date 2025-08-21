@@ -1,31 +1,31 @@
 const { EntitySchema } = require('typeorm')
 
-const Post = new EntitySchema({
-    name: 'Post', // 定义实体名称
-    tableName: 'posts', // 数据库中对应的表名
+const User = new EntitySchema({
+    name: 'User', // 定义实体名称
+    tableName: 'userss', // 数据库中对应的表名
     columns: {
         // 定义数据表字段
         id: {
             // 主键ID
             primary: true, // 设置为主键
             type: 'int', // 字段类型为整数
-            generated: true // 值由数据库自动生成
+            generated: true,
+            nullable: false
         },
-        title: {
-            // 文章标题
+        username: {
             type: 'varchar', // 类型为可变字符串
-            length: 255, // 最大长度为255
+            length: 50, // 最大长度为50
             nullable: false // 不允许为空
         },
-        content: {
-            // 文章内容
-            type: 'text', // 类型为文本
+        password: {
+            type: 'varchar',
+            length: 255,
             nullable: false // 不允许为空
         },
         createdAt: {
             // 创建时间
-            type: 'timestamp', // 类型为时间戳
-            default: () => 'CURRENT_TIMESTAMP' // 默认值为当前时间
+            type: 'timestamp',
+            default: () => 'CURRENT_TIMESTAMP'
         },
         updatedAt: {
             // 最后更新时间
@@ -36,6 +36,4 @@ const Post = new EntitySchema({
     }
 })
 
-module.exports = {
-    Post // 导出Post实体
-}
+module.exports = User
